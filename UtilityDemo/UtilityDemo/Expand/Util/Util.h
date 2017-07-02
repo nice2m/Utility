@@ -178,7 +178,7 @@
  *
  *  @param text 提示语句
  */
-+ (void)makeToastText:(NSString *)text;
++ (void)showToastText:(NSString *)text;
 
 /**
  隐藏HUD 提示

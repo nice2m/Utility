@@ -14,8 +14,10 @@
 @implementation Util
 
 static NSDateFormatter * _dateFormatter = nil;
-static MBProgressHUD * _toastHud;
-static MBProgressHUD * _loadingHUD;
+static MBProgressHUD * _toastHud = nil;
+static MBProgressHUD * _loadingHUD = nil;
+static NSObject * _anObj = nil;
+
 
 
 +(void)load{
@@ -201,34 +203,33 @@ static MBProgressHUD * _loadingHUD;
  *  @param text dd
  */
 + (void)showHudText:(NSString *)text{
-    [self hideHUD];
     
     MBProgressHUD * hud = [self loadingHUD];
+    hud.mode = MBProgressHUDModeIndeterminate;
     hud.label.text = text;
-    hud.backgroundView.style = MBProgressHUDBackgroundStyleSolidColor;
-    hud.backgroundView.color = [UIColor colorWithWhite:0.f alpha:0.1f];
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [hud showAnimated:YES];
-    });
+    hud.backgroundView.style = MBProgressHUDBackgroundStyleBlur;
+    //hud.backgroundView.color = [UIColor colorWithWhite:0.f alpha:0.33f];
+    [[self rootWindow] addSubview:hud];
+    [hud showAnimated:YES];
 }
 /**
  *  直接显示提示
  *
  *  @param text 提示语句
  */
-+ (void)makeToastText:(NSString *)text{
-    MBProgressHUD * hud = [self toastHUD];
++ (void)showToastText:(NSString *)text{
     
+    MBProgressHUD * hud = [self toastHUD];
     hud.label.text = text;
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [hud showAnimated:YES];
-    });
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    hud.mode = MBProgressHUDModeText;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [hud hideAnimated:YES];
     });
+    [[self rootWindow] addSubview:hud];
+    [hud showAnimated:YES];
 }
+
 /**
  隐藏HUD 提示
  */
@@ -395,14 +396,14 @@ static MBProgressHUD * _loadingHUD;
  @return 弹窗专用的HUD
  */
 + (MBProgressHUD *)toastHUD{
+//    MBProgressHUD * _toastHud;
     
     if (!_toastHud){
-        UIViewController * rootVC = [UIApplication sharedApplication].windows.lastObject.rootViewController;
-        _toastHud = [[MBProgressHUD alloc] initWithView:rootVC.view];
+        UIWindow * window = [self rootWindow];
+        _toastHud = [[MBProgressHUD alloc] initWithView:window];
     }
     return _toastHud;
 }
-
 
 /**
  返回 加载中专用HUD
@@ -410,11 +411,18 @@ static MBProgressHUD * _loadingHUD;
  @return 返回 加载中专用HUD
  */
 + (MBProgressHUD *)loadingHUD{
+//    MBProgressHUD * _loadingHUD;
     if (!_loadingHUD){
-        UIViewController * rootVC = [UIApplication sharedApplication].windows.lastObject.rootViewController;
-        _toastHud = [[MBProgressHUD alloc] initWithView:rootVC.view];
+        UIWindow * window = [self rootWindow];
+        _loadingHUD = [[MBProgressHUD alloc] initWithView:window];
     }
     return _loadingHUD;
+}
+
++ (UIWindow *)rootWindow{
+    
+    UIWindow * rootWindow = [UIApplication sharedApplication].windows.lastObject;
+    return rootWindow;
 }
 
 @end
